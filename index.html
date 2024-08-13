@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Cricket Score Tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Live Cricket Score Tracker</h1>
+    </header>
+    <main>
+      <section id="game-creation">
+        <h2>Create a Game</h2>
+        <form id="game-form">
+          <label for="team1">Team 1:</label>
+          <input type="text" id="team1" required />
+          <label for="team2">Team 2:</label>
+          <input type="text" id="team2" required />
+          <label for="overs">Number of Overs:</label>
+          <input type="number" id="overs" min="1" required />
+          <label for="batting-team">Batting Team:</label>
+          <select id="batting-team" required>
+            <option value="team1">Team 1</option>
+            <option value="team2">Team 2</option>
+          </select>
+          <button type="submit">Create Game</button>
+        </form>
+        <h3>Current Game</h3>
+        <div id="current-game">
+          <p id="game-info"></p>
+          <p id="score" class="score">Score: 0/0</p>
+        </div>
+      </section>
+      <section id="score-update" style="display: none">
+        <h2>Update Score</h2>
+        <button id="run1">1 Run</button>
+        <button id="run2">2 Runs</button>
+        <button id="run4">4 Runs</button>
+        <button id="run6">6 Runs</button>
+        <button id="wicket">Wicket</button>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
