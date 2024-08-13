@@ -31,15 +31,26 @@
         <div id="current-game">
           <p id="game-info"></p>
           <p id="score" class="score">Score: 0/0</p>
+          <p id="ball-info">Balls: 0 | Runs: 0</p>
+          <p id="over-info">Overs: 0.0</p>
         </div>
       </section>
       <section id="score-update" style="display: none">
         <h2>Update Score</h2>
-        <button id="run1">1 Run</button>
-        <button id="run2">2 Runs</button>
-        <button id="run4">4 Runs</button>
-        <button id="run6">6 Runs</button>
-        <button id="wicket">Wicket</button>
+        <div class="buttons-container">
+          <button id="run1">1 Run</button>
+          <button id="run2">2 Runs</button>
+          <button id="run4">4 Runs</button>
+          <button id="run6">6 Runs</button>
+          <button id="wicket">Wicket</button>
+          <button id="no-ball">No Ball</button>
+          <button id="wide">Wide</button>
+        </div>
+        <div class="buttons-container">
+          <button id="pause-game">Pause Game</button>
+          <button id="resume-game">Resume Game</button>
+          <button id="reset-game">Reset Game</button>
+        </div>
       </section>
     </main>
     <script src="app.js"></script>
