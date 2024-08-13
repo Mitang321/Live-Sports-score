@@ -1,104 +1,195 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const gameForm = document.getElementById("game-form");
-  const team1Input = document.getElementById("team1");
-  const team2Input = document.getElementById("team2");
-  const oversInput = document.getElementById("overs");
-  const battingTeamSelect = document.getElementById("batting-team");
-  const gameInfoElement = document.getElementById("game-info");
-  const scoreElement = document.getElementById("score");
-  const ballInfoElement = document.getElementById("ball-info");
-  const overInfoElement = document.getElementById("over-info");
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  let loggedInUser = null;
+  let currentGame = null;
+
+  // Manually add the admin user
+  if (!users.find((user) => user.username === "admin")) {
+    users.push({ username: "admin", password: "admin123", role: "admin" });
+    localStorage.setItem("users", JSON.stringify(users));
+  }
+
+  const authForm = document.getElementById("auth-form");
+  const formTitle = document.getElementById("form-title");
+  const switchText = document.getElementById("switch-text");
+  const switchBtn = document.getElementById("switch-btn");
+  const gameCreationSection = document.getElementById("game-creation");
   const scoreUpdateSection = document.getElementById("score-update");
+  const gameForm = document.getElementById("game-form");
+  const scoreButtons = document.querySelectorAll("#score-update button");
 
-  let runs = 0;
-  let wickets = 0;
-  let balls = 0;
-  let totalRuns = 0;
-  let oversCompleted = 0;
-  let battingTeam = "";
-  let isGamePaused = false;
+  let isLoginMode = true;
 
-  function updateScore(runsScored, wicketsTaken, ballsFaced) {
-    if (isGamePaused) return;
+  // Toggle between login and registration modes
+  switchBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    isLoginMode = !isLoginMode;
+    formTitle.textContent = isLoginMode ? "Login" : "Sign up";
+    switchText.innerHTML = isLoginMode
+      ? "Don't have an account? <a href='#' id='switch-btn'>Sign up</a>"
+      : "Already have an account? <a href='#' id='switch-btn'>Login</a>";
+    document.querySelector("button.btn").textContent = isLoginMode
+      ? "Login"
+      : "Sign up";
+  });
 
-    runs += runsScored;
-    totalRuns += runsScored;
-    wickets += wicketsTaken;
-    balls += ballsFaced;
+  // Handle form submission
+  authForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const username = document.getElementById("auth-username").value.trim();
+    const password = document.getElementById("auth-password").value.trim();
 
-    if (balls % 6 === 0 && balls > 0) {
-      oversCompleted += 1;
-      balls = 0;
+    if (username === "" || password === "") {
+      alert("Please enter both username and password.");
+      return;
     }
 
-    scoreElement.textContent = `Score: ${runs}/${wickets}`;
-    ballInfoElement.textContent = `Balls: ${
-      balls + oversCompleted * 6
-    } | Runs: ${totalRuns}`;
-    overInfoElement.textContent = `Overs: ${oversCompleted}.${balls}`;
-  }
-
-  function startGame(team1, team2, overs, battingTeam) {
-    gameInfoElement.textContent = `Match between ${team1} and ${team2}. ${battingTeam} will bat first for ${overs} overs.`;
-    scoreUpdateSection.style.display = "block";
-  }
-
-  function pauseGame() {
-    isGamePaused = true;
-  }
-
-  function resumeGame() {
-    isGamePaused = false;
-  }
-
-  function resetGame() {
-    runs = 0;
-    wickets = 0;
-    balls = 0;
-    totalRuns = 0;
-    oversCompleted = 0;
-    isGamePaused = false;
-
-    scoreElement.textContent = "Score: 0/0";
-    ballInfoElement.textContent = "Balls: 0 | Runs: 0";
-    overInfoElement.textContent = "Overs: 0.0";
-  }
-
-  gameForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const team1 = team1Input.value.trim();
-    const team2 = team2Input.value.trim();
-    const overs = parseInt(oversInput.value, 10);
-    battingTeam = battingTeamSelect.value === "team1" ? team1 : team2;
-
-    if (team1 && team2 && overs > 0) {
-      startGame(team1, team2, overs, battingTeam);
+    if (isLoginMode) {
+      loginUser(username, password);
+    } else {
+      registerUser(username, password);
     }
   });
 
-  document
-    .getElementById("run1")
-    .addEventListener("click", () => updateScore(1, 0, 1));
-  document
-    .getElementById("run2")
-    .addEventListener("click", () => updateScore(2, 0, 1));
-  document
-    .getElementById("run4")
-    .addEventListener("click", () => updateScore(4, 0, 1));
-  document
-    .getElementById("run6")
-    .addEventListener("click", () => updateScore(6, 0, 1));
-  document
-    .getElementById("wicket")
-    .addEventListener("click", () => updateScore(0, 1, 1));
-  document
-    .getElementById("no-ball")
-    .addEventListener("click", () => updateScore(1, 0, 0));
-  document
-    .getElementById("wide")
-    .addEventListener("click", () => updateScore(1, 0, 0));
+  function registerUser(username, password) {
+    const userExists = users.some((user) => user.username === username);
+    if (userExists) {
+      alert("User already exists!");
+      return;
+    }
 
-  document.getElementById("pause-game").addEventListener("click", pauseGame);
-  document.getElementById("resume-game").addEventListener("click", resumeGame);
-  document.getElementById("reset-game").addEventListener("click", resetGame);
+    users.push({ username, password, role: "user" }); // By default, users are registered as 'user'
+    localStorage.setItem("users", JSON.stringify(users));
+    alert("Registration successful! You can now log in.");
+    switchToLoginMode();
+  }
+
+  function loginUser(username, password) {
+    const user = users.find(
+      (user) => user.username === username && user.password === password
+    );
+    if (user) {
+      loggedInUser = user;
+      if (user.role === "admin") {
+        gameCreationSection.style.display = "block";
+        scoreUpdateSection.style.display = "block";
+      } else {
+        gameCreationSection.style.display = "none";
+        scoreUpdateSection.style.display = "none";
+      }
+      document.getElementById("auth-section").style.display = "none";
+      alert(`Welcome, ${username}!`);
+    } else {
+      alert("Invalid username or password!");
+    }
+  }
+
+  function switchToLoginMode() {
+    isLoginMode = true;
+    formTitle.textContent = "Login";
+    switchText.innerHTML =
+      "Don't have an account? <a href='#' id='switch-btn'>Sign up</a>";
+    document.querySelector("button.btn").textContent = "Login";
+  }
+
+  // Handle game creation
+  gameForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (loggedInUser && loggedInUser.role === "admin") {
+      const team1 = document.getElementById("team1").value.trim();
+      const team2 = document.getElementById("team2").value.trim();
+      const overs = parseInt(document.getElementById("overs").value, 10);
+      const battingTeam = document.getElementById("batting-team").value;
+
+      if (!team1 || !team2 || isNaN(overs) || !battingTeam) {
+        alert("Please fill out all fields correctly.");
+        return;
+      }
+
+      currentGame = {
+        team1,
+        team2,
+        overs,
+        battingTeam,
+        runs: { team1: 0, team2: 0 },
+        wickets: { team1: 0, team2: 0 },
+        balls: { team1: 0, team2: 0 },
+        oversCount: { team1: 0, team2: 0 },
+        target: null,
+      };
+
+      document.getElementById(
+        "game-info"
+      ).textContent = `Teams: ${team1} vs ${team2}`;
+      document.getElementById(
+        "score"
+      ).textContent = `Score: ${currentGame.runs.team1}/0`;
+      document.getElementById("ball-info").textContent = `Balls: 0 | Runs: 0`;
+      document.getElementById("over-info").textContent = `Overs: 0.0`;
+
+      alert("Game created successfully!");
+    } else {
+      alert("You must be logged in as an admin to create a game.");
+    }
+  });
+
+  // Handle score updates
+  scoreButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      if (currentGame && loggedInUser && loggedInUser.role === "admin") {
+        const team = currentGame.battingTeam === "team1" ? "team1" : "team2";
+        const buttonId = button.id;
+
+        switch (buttonId) {
+          case "run1":
+            currentGame.runs[team] += 1;
+            break;
+          case "run2":
+            currentGame.runs[team] += 2;
+            break;
+          case "run4":
+            currentGame.runs[team] += 4;
+            break;
+          case "run6":
+            currentGame.runs[team] += 6;
+            break;
+          case "wicket":
+            currentGame.wickets[team] += 1;
+            if (currentGame.wickets[team] >= 11) {
+              alert("11 wickets have fallen. The next team will bat.");
+              switchBattingTeam();
+            }
+            break;
+          case "no-ball":
+            // Handle no-ball
+            break;
+          case "wide":
+            // Handle wide
+            break;
+          default:
+            break;
+        }
+
+        updateScore();
+      } else {
+        alert("You must be logged in as an admin to update the score.");
+      }
+    });
+  });
+
+  function updateScore() {
+    const team = currentGame.battingTeam === "team1" ? "team1" : "team2";
+    document.getElementById(
+      "score"
+    ).textContent = `Score: ${currentGame.runs[team]}/${currentGame.wickets[team]}`;
+    // Additional score update logic (balls, overs) would be added here
+  }
+
+  function switchBattingTeam() {
+    currentGame.battingTeam =
+      currentGame.battingTeam === "team1" ? "team2" : "team1";
+    document.getElementById("score").textContent = `Score: ${
+      currentGame.runs[currentGame.battingTeam]
+    }/0`;
+  }
 });

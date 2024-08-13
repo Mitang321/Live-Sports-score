@@ -11,8 +11,28 @@
       <h1>Live Cricket Score Tracker</h1>
     </header>
     <main>
-      <section id="game-creation">
-        <h2>Create a Game</h2>
+      <section id="auth-section" class="auth-container">
+        <div class="auth-box">
+          <h2 id="form-title">Login</h2>
+          <form id="auth-form">
+            <div class="form-group">
+              <label for="auth-username">Username:</label>
+              <input type="text" id="auth-username" required />
+            </div>
+            <div class="form-group">
+              <label for="auth-password">Password:</label>
+              <input type="password" id="auth-password" required />
+            </div>
+            <button type="submit" class="btn">Login</button>
+          </form>
+          <p id="switch-text">
+            Don't have an account? <a href="#" id="switch-btn">Sign up</a>
+          </p>
+        </div>
+      </section>
+
+      <section id="game-creation" style="display: none">
+        <h2>Admin: Create a Game</h2>
         <form id="game-form">
           <label for="team1">Team 1:</label>
           <input type="text" id="team1" required />
@@ -35,6 +55,7 @@
           <p id="over-info">Overs: 0.0</p>
         </div>
       </section>
+
       <section id="score-update" style="display: none">
         <h2>Update Score</h2>
         <div class="buttons-container">
