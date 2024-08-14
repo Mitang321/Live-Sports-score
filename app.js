@@ -1,4 +1,3 @@
-// Initial Setup
 let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
 let matchData = JSON.parse(localStorage.getItem("matchData")) || null;
 let gamePaused = false;
@@ -69,6 +68,29 @@ function signUp(username, password) {
     document.getElementById("switch-btn").click();
   }
 }
+function login(username, password) {
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+
+  if (username === "admin" && password === "admin123") {
+    const adminUser = { username, password, role: "admin" };
+    localStorage.setItem("currentUser", JSON.stringify(adminUser));
+    currentUser = adminUser;
+    updateUIBasedOnRole();
+    return;
+  }
+
+  let user = users.find(
+    (user) => user.username === username && user.password === password
+  );
+
+  if (user) {
+    localStorage.setItem("currentUser", JSON.stringify(user));
+    currentUser = user;
+    updateUIBasedOnRole();
+  } else {
+    alert("Invalid username or password");
+  }
+}
 
 function updateUIBasedOnRole() {
   const gameCreationSection = document.getElementById("game-creation");
@@ -83,7 +105,7 @@ function updateUIBasedOnRole() {
     } else {
       gameCreationSection.style.display = "none";
       scoreUpdateSection.style.display = "none";
-      displayMatchInfo(); // Normal user can view score
+      displayMatchInfo();
     }
   } else {
     authSection.style.display = "block";
@@ -123,119 +145,127 @@ function displayMatchInfo() {
     const team2Info = `${matchData.team2.name} - ${matchData.team2.score}/${matchData.team2.wickets}`;
 
     gameInfo.innerHTML = `Team 1: ${team1Info} <br> Team 2: ${team2Info}`;
-    ballInfo.innerHTML = `Current Over: ${matchData.currentOver}.${matchData.currentBall}`;
-    overInfo.innerHTML = `Total Overs: ${matchData.overs}`;
-    if (matchData.target > 0) {
-      targetInfo.innerHTML = `Target: ${matchData.target}`;
-    }
+    ballInfo.innerHTML = `Balls: ${matchData.currentBall} | Runs: ${matchData.currentBall}`;
+    overInfo.innerHTML = `Overs: ${matchData.currentOver}`;
+    targetInfo.innerHTML =
+      matchData.currentBatting === "team2" ? `Target: ${matchData.target}` : "";
   }
 }
 
 function setupScoreButtons() {
-  const run1 = document.getElementById("run1");
-  const run2 = document.getElementById("run2");
-  const run4 = document.getElementById("run4");
-  const run6 = document.getElementById("run6");
-  const wicket = document.getElementById("wicket");
-  const noBall = document.getElementById("no-ball");
-  const wide = document.getElementById("wide");
-  const pauseGame = document.getElementById("pause-game");
-  const resumeGame = document.getElementById("resume-game");
-  const resetGame = document.getElementById("reset-game");
-
-  run1.addEventListener("click", () => updateScore(1));
-  run2.addEventListener("click", () => updateScore(2));
-  run4.addEventListener("click", () => updateScore(4));
-  run6.addEventListener("click", () => updateScore(6));
-  wicket.addEventListener("click", () => updateWicket());
-  noBall.addEventListener("click", () => updateScore(1)); // Treating no-ball as 1 run for simplicity
-  wide.addEventListener("click", () => updateScore(1)); // Treating wide as 1 run for simplicity
-  pauseGame.addEventListener("click", () => pauseGameFunction());
-  resumeGame.addEventListener("click", () => resumeGameFunction());
-  resetGame.addEventListener("click", () => resetGameFunction());
+  document
+    .getElementById("run1")
+    .addEventListener("click", () => updateScore(1));
+  document
+    .getElementById("run2")
+    .addEventListener("click", () => updateScore(2));
+  document
+    .getElementById("run4")
+    .addEventListener("click", () => updateScore(4));
+  document
+    .getElementById("run6")
+    .addEventListener("click", () => updateScore(6));
+  document
+    .getElementById("wicket")
+    .addEventListener("click", () => updateWicket());
+  document
+    .getElementById("no-ball")
+    .addEventListener("click", () => updateNoBall());
+  document.getElementById("wide").addEventListener("click", () => updateWide());
+  document
+    .getElementById("pause-game")
+    .addEventListener("click", () => pauseGame());
+  document
+    .getElementById("resume-game")
+    .addEventListener("click", () => resumeGame());
+  document
+    .getElementById("reset-game")
+    .addEventListener("click", () => resetGame());
 }
 
 function updateScore(runs) {
-  if (matchData && !gamePaused) {
-    let currentBattingTeam = matchData[matchData.currentBatting];
-    currentBattingTeam.score += runs;
+  if (gamePaused) return;
 
-    if (matchData.currentBall < 5) {
-      matchData.currentBall++;
-    } else {
+  if (matchData) {
+    const battingTeam =
+      matchData.currentBatting === "team1" ? "team1" : "team2";
+    matchData[battingTeam].score += runs;
+    matchData.currentBall += 1;
+    if (matchData.currentBall % 6 === 0) {
+      matchData.currentOver += 1;
       matchData.currentBall = 0;
-      matchData.currentOver++;
     }
-
-    if (
-      matchData.currentOver === parseInt(matchData.overs) &&
-      matchData.currentBall === 0
-    ) {
-      if (matchData.currentBatting === "team1") {
-        matchData.target = currentBattingTeam.score + 1;
-        matchData.currentBatting = "team2";
-        matchData.currentOver = 0;
-        matchData.currentBall = 0;
-      } else {
-        endMatch();
-      }
+    if (matchData[battingTeam].wickets >= 11) {
+      alert(
+        `${matchData[battingTeam === "team1" ? "team1" : "team2"].name} All Out`
+      );
+      switchBatting();
     }
-
     localStorage.setItem("matchData", JSON.stringify(matchData));
     displayMatchInfo();
   }
 }
 
 function updateWicket() {
-  if (matchData && !gamePaused) {
-    let currentBattingTeam = matchData[matchData.currentBatting];
-    currentBattingTeam.wickets++;
+  if (gamePaused) return;
 
-    if (
-      currentBattingTeam.wickets === 11 ||
-      (matchData.currentOver === parseInt(matchData.overs) &&
-        matchData.currentBall === 0)
-    ) {
-      if (matchData.currentBatting === "team1") {
-        matchData.target = currentBattingTeam.score + 1;
-        matchData.currentBatting = "team2";
-        matchData.currentOver = 0;
-        matchData.currentBall = 0;
-      } else {
-        endMatch();
-      }
+  if (matchData) {
+    const battingTeam =
+      matchData.currentBatting === "team1" ? "team1" : "team2";
+    matchData[battingTeam].wickets += 1;
+    matchData.currentBall += 1;
+    if (matchData.currentBall % 6 === 0) {
+      matchData.currentOver += 1;
+      matchData.currentBall = 0;
     }
-
+    if (matchData[battingTeam].wickets >= 11) {
+      alert(`${matchData[battingTeam].name} All Out`);
+      switchBatting();
+    }
     localStorage.setItem("matchData", JSON.stringify(matchData));
     displayMatchInfo();
   }
 }
 
-function endMatch() {
-  const team1Score = matchData.team1.score;
-  const team2Score = matchData.team2.score;
-  const winner =
-    team2Score >= matchData.target
-      ? matchData.team2.name
-      : matchData.team1.name;
-  alert(`${winner} wins the match!`);
-  localStorage.removeItem("matchData");
-  matchData = null;
-  displayMatchInfo();
+function switchBatting() {
+  if (matchData) {
+    if (matchData.currentBatting === "team1") {
+      matchData.currentBatting = "team2";
+      matchData.target = matchData.team1.score + 1;
+    } else {
+      alert("Game Over");
+      resetGame();
+    }
+    matchData.currentBall = 0;
+    matchData.currentOver = 0;
+    localStorage.setItem("matchData", JSON.stringify(matchData));
+    displayMatchInfo();
+  }
 }
 
-function pauseGameFunction() {
+function updateNoBall() {
+  if (gamePaused) return;
+
+  updateScore(1);
+}
+
+function updateWide() {
+  if (gamePaused) return;
+
+  updateScore(1);
+}
+
+function pauseGame() {
   gamePaused = true;
 }
 
-function resumeGameFunction() {
+function resumeGame() {
   gamePaused = false;
 }
 
-function resetGameFunction() {
-  if (confirm("Are you sure you want to reset the game?")) {
-    matchData = null;
-    localStorage.removeItem("matchData");
-    displayMatchInfo();
-  }
+function resetGame() {
+  matchData = null;
+  localStorage.removeItem("matchData");
+  localStorage.removeItem("currentUser");
+  location.reload();
 }
