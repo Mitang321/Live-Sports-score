@@ -123,6 +123,13 @@ button.btn:hover {
   margin-top: 10px;
 }
 
+#target-info {
+  font-size: 1.2em;
+  color: red;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
 .buttons-container {
   display: flex;
   flex-wrap: wrap;
@@ -133,59 +140,31 @@ button.btn:hover {
 .buttons-container button {
   flex: 1;
   min-width: calc(33.333% - 20px);
-}
-/* Game Creation & Score Update */
-#game-creation,
-#score-update {
-  display: none;
-  margin-top: 20px;
-}
-
-#game-creation input,
-#game-creation select,
-#game-creation button,
-#score-update button {
-  margin-bottom: 10px;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
-}
-
-#game-creation button,
-#score-update button {
   background-color: #007bff;
   color: #fff;
   font-size: 16px;
   cursor: pointer;
 }
 
-#game-creation button:hover,
-#score-update button:hover {
+.buttons-container button:hover {
   background-color: #0056b3;
 }
 
-#score {
-  font-size: 18px;
-  font-weight: bold;
-  margin-top: 20px;
+#pause-game,
+#resume-game,
+#reset-game {
+  background-color: #dc3545;
 }
 
-#game-info,
-#ball-info,
-#over-info {
-  font-size: 16px;
-  margin-top: 10px;
+#pause-game:hover,
+#resume-game:hover,
+#reset-game:hover {
+  background-color: #c82333;
 }
 
-/* UI improvements */
-#score-update button {
-  margin-right: 5px;
-}
-
-#score-update button:last-of-type {
-  margin-right: 0;
-}
-/* Login/Sign-up Form */
 #auth-section {
   margin: 20px auto;
   width: 300px;
@@ -225,7 +204,6 @@ button.btn:hover {
   text-decoration: underline;
 }
 
-/* Game Creation & Score Display */
 #game-creation,
 #score-update,
 #score {
