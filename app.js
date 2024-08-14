@@ -1,195 +1,193 @@
+// Initial Setup
+let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
+let matchData = JSON.parse(localStorage.getItem("matchData")) || null;
+
 document.addEventListener("DOMContentLoaded", () => {
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-  let loggedInUser = null;
-  let currentGame = null;
+  setupAuthForm();
+  displayMatchInfo();
+  updateUIBasedOnRole();
+  setupScoreButtons();
+});
 
-  // Manually add the admin user
-  if (!users.find((user) => user.username === "admin")) {
-    users.push({ username: "admin", password: "admin123", role: "admin" });
-    localStorage.setItem("users", JSON.stringify(users));
-  }
-
+function setupAuthForm() {
   const authForm = document.getElementById("auth-form");
-  const formTitle = document.getElementById("form-title");
-  const switchText = document.getElementById("switch-text");
   const switchBtn = document.getElementById("switch-btn");
-  const gameCreationSection = document.getElementById("game-creation");
-  const scoreUpdateSection = document.getElementById("score-update");
-  const gameForm = document.getElementById("game-form");
-  const scoreButtons = document.querySelectorAll("#score-update button");
+  const formTitle = document.getElementById("form-title");
 
-  let isLoginMode = true;
+  let isLogin = true;
 
-  // Toggle between login and registration modes
   switchBtn.addEventListener("click", (e) => {
     e.preventDefault();
-    isLoginMode = !isLoginMode;
-    formTitle.textContent = isLoginMode ? "Login" : "Sign up";
-    switchText.innerHTML = isLoginMode
-      ? "Don't have an account? <a href='#' id='switch-btn'>Sign up</a>"
-      : "Already have an account? <a href='#' id='switch-btn'>Login</a>";
-    document.querySelector("button.btn").textContent = isLoginMode
-      ? "Login"
-      : "Sign up";
+    isLogin = !isLogin;
+    formTitle.innerText = isLogin ? "Login" : "Sign Up";
+    authForm.querySelector("button").innerText = isLogin ? "Login" : "Sign Up";
+    switchBtn.innerHTML = isLogin
+      ? "Don't have an account? <a href='#'>Sign up</a>"
+      : "Already have an account? <a href='#'>Login</a>";
   });
 
-  // Handle form submission
   authForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const username = document.getElementById("auth-username").value.trim();
-    const password = document.getElementById("auth-password").value.trim();
+    const username = document.getElementById("auth-username").value;
+    const password = document.getElementById("auth-password").value;
 
-    if (username === "" || password === "") {
-      alert("Please enter both username and password.");
-      return;
-    }
-
-    if (isLoginMode) {
-      loginUser(username, password);
+    if (isLogin) {
+      login(username, password);
     } else {
-      registerUser(username, password);
+      signUp(username, password);
     }
   });
+}
 
-  function registerUser(username, password) {
-    const userExists = users.some((user) => user.username === username);
-    if (userExists) {
-      alert("User already exists!");
-      return;
-    }
+function login(username, password) {
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  let user = users.find(
+    (user) => user.username === username && user.password === password
+  );
 
-    users.push({ username, password, role: "user" }); // By default, users are registered as 'user'
+  if (user) {
+    localStorage.setItem("currentUser", JSON.stringify(user));
+    currentUser = user;
+    updateUIBasedOnRole();
+  } else {
+    alert("Invalid username or password");
+  }
+}
+
+function signUp(username, password) {
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  let userExists = users.some((user) => user.username === username);
+
+  if (userExists) {
+    alert("Username already exists");
+  } else {
+    const newUser = { username, password, role: "user" };
+    users.push(newUser);
     localStorage.setItem("users", JSON.stringify(users));
-    alert("Registration successful! You can now log in.");
-    switchToLoginMode();
+    alert("User registered successfully! Please log in.");
+    document.getElementById("switch-btn").click();
   }
+}
 
-  function loginUser(username, password) {
-    const user = users.find(
-      (user) => user.username === username && user.password === password
-    );
-    if (user) {
-      loggedInUser = user;
-      if (user.role === "admin") {
-        gameCreationSection.style.display = "block";
-        scoreUpdateSection.style.display = "block";
-      } else {
-        gameCreationSection.style.display = "none";
-        scoreUpdateSection.style.display = "none";
-      }
-      document.getElementById("auth-section").style.display = "none";
-      alert(`Welcome, ${username}!`);
+function updateUIBasedOnRole() {
+  const gameCreationSection = document.getElementById("game-creation");
+  const scoreUpdateSection = document.getElementById("score-update");
+  const authSection = document.getElementById("auth-section");
+
+  if (currentUser) {
+    authSection.style.display = "none";
+    if (currentUser.role === "admin") {
+      gameCreationSection.style.display = "block";
+      scoreUpdateSection.style.display = "block";
     } else {
-      alert("Invalid username or password!");
+      gameCreationSection.style.display = "none";
+      scoreUpdateSection.style.display = "none";
+      displayMatchInfo(); // Normal user can view score
     }
+  } else {
+    authSection.style.display = "block";
+    gameCreationSection.style.display = "none";
+    scoreUpdateSection.style.display = "none";
   }
+}
 
-  function switchToLoginMode() {
-    isLoginMode = true;
-    formTitle.textContent = "Login";
-    switchText.innerHTML =
-      "Don't have an account? <a href='#' id='switch-btn'>Sign up</a>";
-    document.querySelector("button.btn").textContent = "Login";
-  }
+document.getElementById("game-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const team1 = document.getElementById("team1").value;
+  const team2 = document.getElementById("team2").value;
+  const overs = document.getElementById("overs").value;
+  const battingTeam = document.getElementById("batting-team").value;
 
-  // Handle game creation
-  gameForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    if (loggedInUser && loggedInUser.role === "admin") {
-      const team1 = document.getElementById("team1").value.trim();
-      const team2 = document.getElementById("team2").value.trim();
-      const overs = parseInt(document.getElementById("overs").value, 10);
-      const battingTeam = document.getElementById("batting-team").value;
+  matchData = {
+    team1: { name: team1, score: 0, wickets: 0 },
+    team2: { name: team2, score: 0, wickets: 0 },
+    overs: overs,
+    currentBatting: battingTeam === "team1" ? "team1" : "team2",
+    currentOver: 0,
+    currentBall: 0,
+  };
 
-      if (!team1 || !team2 || isNaN(overs) || !battingTeam) {
-        alert("Please fill out all fields correctly.");
-        return;
-      }
-
-      currentGame = {
-        team1,
-        team2,
-        overs,
-        battingTeam,
-        runs: { team1: 0, team2: 0 },
-        wickets: { team1: 0, team2: 0 },
-        balls: { team1: 0, team2: 0 },
-        oversCount: { team1: 0, team2: 0 },
-        target: null,
-      };
-
-      document.getElementById(
-        "game-info"
-      ).textContent = `Teams: ${team1} vs ${team2}`;
-      document.getElementById(
-        "score"
-      ).textContent = `Score: ${currentGame.runs.team1}/0`;
-      document.getElementById("ball-info").textContent = `Balls: 0 | Runs: 0`;
-      document.getElementById("over-info").textContent = `Overs: 0.0`;
-
-      alert("Game created successfully!");
-    } else {
-      alert("You must be logged in as an admin to create a game.");
-    }
-  });
-
-  // Handle score updates
-  scoreButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      if (currentGame && loggedInUser && loggedInUser.role === "admin") {
-        const team = currentGame.battingTeam === "team1" ? "team1" : "team2";
-        const buttonId = button.id;
-
-        switch (buttonId) {
-          case "run1":
-            currentGame.runs[team] += 1;
-            break;
-          case "run2":
-            currentGame.runs[team] += 2;
-            break;
-          case "run4":
-            currentGame.runs[team] += 4;
-            break;
-          case "run6":
-            currentGame.runs[team] += 6;
-            break;
-          case "wicket":
-            currentGame.wickets[team] += 1;
-            if (currentGame.wickets[team] >= 11) {
-              alert("11 wickets have fallen. The next team will bat.");
-              switchBattingTeam();
-            }
-            break;
-          case "no-ball":
-            // Handle no-ball
-            break;
-          case "wide":
-            // Handle wide
-            break;
-          default:
-            break;
-        }
-
-        updateScore();
-      } else {
-        alert("You must be logged in as an admin to update the score.");
-      }
-    });
-  });
-
-  function updateScore() {
-    const team = currentGame.battingTeam === "team1" ? "team1" : "team2";
-    document.getElementById(
-      "score"
-    ).textContent = `Score: ${currentGame.runs[team]}/${currentGame.wickets[team]}`;
-    // Additional score update logic (balls, overs) would be added here
-  }
-
-  function switchBattingTeam() {
-    currentGame.battingTeam =
-      currentGame.battingTeam === "team1" ? "team2" : "team1";
-    document.getElementById("score").textContent = `Score: ${
-      currentGame.runs[currentGame.battingTeam]
-    }/0`;
-  }
+  localStorage.setItem("matchData", JSON.stringify(matchData));
+  displayMatchInfo();
 });
+
+function displayMatchInfo() {
+  if (matchData) {
+    const gameInfo = document.getElementById("game-info");
+    const ballInfo = document.getElementById("ball-info");
+    const overInfo = document.getElementById("over-info");
+    const team1Info = `${matchData.team1.name}: ${matchData.team1.score}/${matchData.team1.wickets}`;
+    const team2Info = `${matchData.team2.name}: ${matchData.team2.score}/${matchData.team2.wickets}`;
+    gameInfo.innerHTML = `
+            <p><strong>Team 1:</strong> ${team1Info}</p>
+            <p><strong>Team 2:</strong> ${team2Info}</p>
+            <p><strong>Overs:</strong> ${matchData.currentOver}/${
+      matchData.overs
+    }</p>
+            <p><strong>Batting:</strong> ${
+              matchData.currentBatting === "team1"
+                ? matchData.team1.name
+                : matchData.team2.name
+            }</p>
+        `;
+    ballInfo.innerHTML = `<p><strong>Ball:</strong> ${
+      matchData.currentBall + 1
+    }</p>`;
+    overInfo.innerHTML = `<p><strong>Over:</strong> ${matchData.currentOver}</p>`;
+  }
+}
+
+function setupScoreButtons() {
+  const run1Btn = document.getElementById("run1");
+  const run2Btn = document.getElementById("run2");
+  const run4Btn = document.getElementById("run4");
+  const run6Btn = document.getElementById("run6");
+  const wicketBtn = document.getElementById("wicket");
+
+  run1Btn.addEventListener("click", () => updateScore(1));
+  run2Btn.addEventListener("click", () => updateScore(2));
+  run4Btn.addEventListener("click", () => updateScore(4));
+  run6Btn.addEventListener("click", () => updateScore(6));
+  wicketBtn.addEventListener("click", () => updateScore(0, true));
+}
+
+function updateScore(runs, isWicket = false) {
+  if (matchData) {
+    const currentBattingTeam =
+      matchData.currentBatting === "team1" ? matchData.team1 : matchData.team2;
+
+    if (isWicket) {
+      currentBattingTeam.wickets++;
+      if (currentBattingTeam.wickets === 11) {
+        alert("All wickets down! Next team to bat.");
+        matchData.currentBatting =
+          matchData.currentBatting === "team1" ? "team2" : "team1";
+      }
+    } else {
+      currentBattingTeam.score += runs;
+    }
+
+    matchData.currentBall++;
+    if (matchData.currentBall === 6) {
+      matchData.currentBall = 0;
+      matchData.currentOver++;
+      if (matchData.currentOver === matchData.overs) {
+        alert("Innings over!");
+        matchData.currentBatting =
+          matchData.currentBatting === "team1" ? "team2" : "team1";
+        matchData.currentOver = 0;
+        matchData.currentBall = 0;
+      }
+    }
+
+    localStorage.setItem("matchData", JSON.stringify(matchData));
+    displayMatchInfo();
+  }
+}
+
+// Manually create an admin user
+const users = JSON.parse(localStorage.getItem("users")) || [];
+if (!users.some((user) => user.username === "admin")) {
+  users.push({ username: "admin", password: "admin123", role: "admin" });
+  localStorage.setItem("users", JSON.stringify(users));
+}

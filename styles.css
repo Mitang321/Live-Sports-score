@@ -134,3 +134,135 @@ button.btn:hover {
   flex: 1;
   min-width: calc(33.333% - 20px);
 }
+/* Game Creation & Score Update */
+#game-creation,
+#score-update {
+  display: none;
+  margin-top: 20px;
+}
+
+#game-creation input,
+#game-creation select,
+#game-creation button,
+#score-update button {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+#game-creation button,
+#score-update button {
+  background-color: #007bff;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#game-creation button:hover,
+#score-update button:hover {
+  background-color: #0056b3;
+}
+
+#score {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+#game-info,
+#ball-info,
+#over-info {
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+/* UI improvements */
+#score-update button {
+  margin-right: 5px;
+}
+
+#score-update button:last-of-type {
+  margin-right: 0;
+}
+/* Login/Sign-up Form */
+#auth-section {
+  margin: 20px auto;
+  width: 300px;
+}
+
+#auth-form input[type="text"],
+#auth-form input[type="password"],
+#auth-form button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+#auth-form button {
+  background-color: #007bff;
+  color: #fff;
+  cursor: pointer;
+}
+
+#auth-form button:hover {
+  background-color: #0056b3;
+}
+
+#switch-text {
+  text-align: center;
+  margin-top: 10px;
+}
+
+#switch-text a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+#switch-text a:hover {
+  text-decoration: underline;
+}
+
+/* Game Creation & Score Display */
+#game-creation,
+#score-update,
+#score {
+  display: none;
+}
+
+#game-creation input,
+#game-creation select,
+#game-creation button,
+#score-update button {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+#game-creation button,
+#score-update button {
+  background-color: #28a745;
+  color: #fff;
+  cursor: pointer;
+}
+
+#game-creation button:hover,
+#score-update button:hover {
+  background-color: #218838;
+}
+
+#score {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+#game-info,
+#ball-info,
+#over-info {
+  margin-top: 10px;
+  font-size: 16px;
+}
