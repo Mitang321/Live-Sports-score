@@ -14,3 +14,6 @@ Once 11 wickets are made there target appers for the next team to be score. <br>
 
 ![image](https://github.com/user-attachments/assets/81bccaaa-bfbd-44c8-848e-eb1b36bd7a7d)
 
+## Setup
+1. Clone Repo.
+1. Open `index.html` in a browser.
