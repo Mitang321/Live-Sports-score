@@ -1,4 +1,9 @@
 # Live-Sports-score
+## Live Preview
+
+[Live Preview](https://live-sports-score.vercel.app/)
+
+
 Admins Can login with
 Username: admin
 Password: admin123 <br>
